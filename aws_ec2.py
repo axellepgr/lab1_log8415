@@ -36,8 +36,9 @@ def create_ec2_instance():
         return instanceIDs
 
 # Terminate instances
-instanceIDs = ['i-05687a9ebbfbe2856']
+
+#instanceIDs = ['i-05687a9ebbfbe2856']
 def terminate(instanceIDs):
     print('Terminate instance...')
     resource_ec2.instances.filter(InstanceIds=instanceIDs).terminate()
-terminate(instanceIDs)
+#terminate(instanceIDs)
