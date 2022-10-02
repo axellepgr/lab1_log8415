@@ -35,8 +35,8 @@ def create_ec2_instance():
         print(instanceIDs)
         return instanceIDs
 
+create_ec2_instance()
 # Terminate instances
-
 #instanceIDs = ['i-05687a9ebbfbe2856']
 def terminate(instanceIDs):
     print('Terminate instance...')
