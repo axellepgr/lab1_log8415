@@ -22,7 +22,7 @@ def ssh_connect_with_retry(ssh, ip_address, retries):
         ssh_connect_with_retry(ssh, ip_address, retries)
 
 
-bash = """
+envsetup = """
 #!/bin/bash
 yes | sudo apt-get update
 yes | sudo apt install python3-pip
@@ -38,9 +38,12 @@ app = Flask(__name__)
 def my_app():
     return "Your small app is working"
 EOF
+"""
+
+deploy = """
+cd flask_application
 export flask_application=app.py
 nohup sudo flask run --host=0.0.0.0 --port=80 1>/dev/null 2>/dev/null &
-echo hola que tal
 """
 
 
@@ -50,6 +53,8 @@ def deploy_and_setup_app():
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh_connect_with_retry(ssh, ip_address, 0)
-    stdin, stdout, stderr = ssh.exec_command(bash)
-    print('stdout:', stdout.read())
+    stdin, stdout, stderr = ssh.exec_command(envsetup)
+    print('env setup done \n stdout:', stdout.read())
+    stdin, stdout, stderr = ssh.exec_command(deploy)
+    print('deployment done \n')
     # print('stderr:', stderr.read())

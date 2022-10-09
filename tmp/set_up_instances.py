@@ -123,6 +123,5 @@ def run_instances():
             "SubnetId": subnet_id
         }]
     )
-
     for instance in instances:
         print(f'EC2 instance "{instance}" has been launched')
