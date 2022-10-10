@@ -46,12 +46,12 @@ class TargetGroup:
             TargetGroupArn=self.target_group_arn,
             Targets=[
                 {
-                    'Id': self.instance_id,
-                    'Port': 80,
-                },
+                    'Id': id,
+                    'Port': 80
+                } for id in self.instance_id
             ]
         )
-        print('Instance target ' + str(self.instance_id) + ' is registered in target group number ' + str(self.tg_number) + '.')
+        print('Instance targets ' + str(self.instance_id) + ' are registered in target group number ' + str(self.tg_number) + '.')
         
     def get_tg_arn(self):
         return self.target_group_arn
