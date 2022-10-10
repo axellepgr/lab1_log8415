@@ -52,3 +52,6 @@ class TargetGroup:
             ]
         )
         print('Instance target ' + str(self.instance_id) + ' is registered in target group number ' + str(self.tg_number) + '.')
+        
+    def get_tg_arn(self):
+        return self.target_group_arn
