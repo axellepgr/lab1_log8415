@@ -13,7 +13,6 @@ class LoadBalancer:
 
     def create_load_balancer(self):
         print('Creating load balancer...')
-        print(self.subnet_id)
         response = self.elbv2_client.create_load_balancer(
         Name='Load-balancer-1',
         Subnets=self.subnet_id,
@@ -30,9 +29,7 @@ class LoadBalancer:
         )
         self.dns_name = response['LoadBalancers'][0]['DNSName']
         self.load_balancer_arn = response['LoadBalancers'][0]['LoadBalancerArn']
-        print(self.dns_name)
-        print(self.load_balancer_arn)
-        print('Load balancer created.')
+        print('Load balancer created at : ' + self.dns_name)
 
         
     def delete_load_balancer(self):

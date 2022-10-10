@@ -1,22 +1,35 @@
 import set_up_instances
 import deploy_flask_app
 import set_up_load_balancer
+import set_up_target_group
 import time
 
 # IMPORTANT before running the file download your private key
+
+TARGET_GROUP_NUMBER = [1,2]
 
 # Setting the instances
 print("Let set up the instances")
 instance = set_up_instances.Instance()
 instance.run_instances()
-security_group_id, subnet_id = instance.get_ids()
+security_group_id, subnet_id, vpc_id = instance.get_ids()
+instances_details = instance.get_instance_infos()
 time.sleep(30)
 
-print("Deploying the load_balancer")
+# Setting up the targets groups
+for tg_nb in TARGET_GROUP_NUMBER:
+    print("\n Deploying the target group number " + str(tg_nb))
+    targetGroup = set_up_target_group.TargetGroup(tg_nb, vpc_id, instances_details['id'][tg_nb-1])
+    targetGroup.create_target_group()
+    targetGroup.register_target()
+    time.sleep(10)
+
+# Setting up the load balancer
+print("\nDeploying the load balancer")
 loadBalancer = set_up_load_balancer.LoadBalancer(security_group_id, subnet_id)
 loadBalancer.create_load_balancer()
-time.sleep(30)
+time.sleep(10)
 
 # Deploying flask in all of the running instances
-print("Deploying the flask app")
+print("\nDeploying the flask app")
 deploy_flask_app.deploy_and_setup_app()

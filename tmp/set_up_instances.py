@@ -33,8 +33,11 @@ class Instance:
     
     def __init__(self):
         self.ec2_client = boto3.client("ec2", region_name=AWS_REGION)
+        self.ec2_resource = boto3.resource('ec2', region_name=AWS_REGION)
         self.security_group_id = None 
         self.subnet_id = None
+        self.vpc_id = None
+        self.instances_details = None
 
     def create_key_pair(self):
         print("Generating a key pair")
@@ -49,22 +52,17 @@ class Instance:
     def security_group(self):
 
         sg_name = "TP1"
-        ec2_resource = boto3.resource('ec2', region_name=AWS_REGION)
-        
-        addresses_dict = self.ec2_client.describe_addresses()
-        for eip_dict in addresses_dict['Addresses']:
-            print(eip_dict['PublicIp'])
 
         # Creating a new vpc
         vpc_response = self.ec2_client.create_vpc(CidrBlock='172.31.0.0/20')
-        vpc = ec2_resource.Vpc(vpc_response["Vpc"]["VpcId"])
+        vpc = self.ec2_resource.Vpc(vpc_response["Vpc"]["VpcId"])
         vpc.create_tags(Tags=[{"Key": "Name", "Value": "default_vpc2"}])
         vpc.wait_until_available()
         self.ec2_client.modify_vpc_attribute(
             VpcId=vpc_response["Vpc"]["VpcId"], EnableDnsSupport={'Value': True})
         self.ec2_client.modify_vpc_attribute(
             VpcId=vpc_response["Vpc"]["VpcId"], EnableDnsHostnames={'Value': True})
-        print(vpc_response["Vpc"]["VpcId"])
+        self.vpc_id = vpc.id
 
         # Create and Attach the Internet Gateway
         ig_response = self.ec2_client.create_internet_gateway()
@@ -83,7 +81,6 @@ class Instance:
             SubnetId=subnet.id,
             MapPublicIpOnLaunch={'Value': True},
         )
-        print(subnet.id)
         self.subnet_id=[subnet.id]
         routetable.associate_with_subnet(SubnetId=self.subnet_id[0])
         
@@ -93,7 +90,6 @@ class Instance:
             SubnetId=subnet.id,
             MapPublicIpOnLaunch={'Value': True},
         )
-        print(subnet.id)
         self.subnet_id.append(subnet.id)
         routetable.associate_with_subnet(SubnetId=self.subnet_id[1])
         
@@ -121,7 +117,7 @@ class Instance:
                 'ToPort': 443,
                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
             ])
-        print('Ingress Successfully Set %s' % data)
+        print('Ingress Successfully Set.')
 
 
     def run_instances(self):
@@ -139,8 +135,8 @@ class Instance:
                 "SubnetId": self.subnet_id[0]
             }]
         )
-        for instance in instances:
-            print(f'EC2 instance "{instance}" has been launched')
+        instance_ids = [instances['Instances'][0]['InstanceId']]
+        print(f'EC2 instance "{instance_ids[0]}" has been launched')
 
         # 2nd instance
         instances = self.ec2_client.run_instances(
@@ -156,8 +152,13 @@ class Instance:
                 "SubnetId": self.subnet_id[1]
             }]
         )
-        for instance in instances:
-            print(f'EC2 instance "{instance}" has been launched')
-            
+        instance_ids.append(instances['Instances'][0]['InstanceId'])
+        print(f'EC2 instance "{instance_ids[1]}" has been launched')
+        self.instances_details = {'id':instance_ids, 'zone':AVAILABILITY_ZONE}
+
+
     def get_ids(self):
-        return self.security_group_id, self.subnet_id
+        return self.security_group_id, self.subnet_id, self.vpc_id
+
+    def get_instance_infos(self):
+        return self.instances_details
