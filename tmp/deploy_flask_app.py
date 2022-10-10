@@ -1,11 +1,12 @@
 import helper_methods
 import paramiko
 import time
-
+import os
 
 def ssh_connect_with_retry(ssh, ip_address, retries):
     if retries > 3:
         return False
+    current_directory = os.getcwd()
     privkey = paramiko.RSAKey.from_private_key_file(
         'labsuser.pem')
     interval = 5
