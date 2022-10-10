@@ -46,15 +46,14 @@ class LoadBalancer:
             DefaultActions=[
                 {
                     'Type': 'forward',
-                    'TargetGroupArn': 'string',
                     'ForwardConfig': {
                         'TargetGroups': [
                             {
-                                'TargetGroupArn': self.tg_arn[0],
+                                'TargetGroupArn': str(self.tg_arn[0]),
                                 'Weight': 1
                             },
                             {
-                                'TargetGroupArn': self.tg_arn[1],
+                                'TargetGroupArn': str(self.tg_arn[1]),
                                 'Weight': 1
                             },
                         ],
@@ -69,4 +68,9 @@ class LoadBalancer:
             ]
         )
         self.listener_arn = response['Listeners'][0]['ListenerArn']
+        
+    def delete_listener(self):
+        self.elbv2_client.delete_listener(ListenerArn=self.listener_arn)
+        self.listener_arn = None
+        print('Listener deleted.')
 
