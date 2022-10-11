@@ -37,7 +37,6 @@ class Instance:
         self.security_group_id = None 
         self.subnet_id = None
         self.vpc_id = None
-        self.instances_details = None
 
     def create_key_pair(self):
         print("Generating a key pair")
@@ -123,8 +122,8 @@ class Instance:
     def run_instances(self):
         self.security_group()
         instances = self.ec2_client.run_instances(
-            MinCount=1,
-            MaxCount=1,
+            MinCount=5,
+            MaxCount=5,
             ImageId=AMI_ID[0],
             InstanceType=INSTANCE_TYPE[0],
             KeyName=KEY_PAIR_NAME,
@@ -135,13 +134,11 @@ class Instance:
                 "SubnetId": self.subnet_id[0]
             }]
         )
-        instance_ids = [instances['Instances'][0]['InstanceId']]
-        print(f'EC2 instance "{instance_ids[0]}" has been launched')
 
         # 2nd instance
         instances = self.ec2_client.run_instances(
-            MinCount=1,
-            MaxCount=1,
+            MinCount=4,
+            MaxCount=4,
             ImageId=AMI_ID[1],
             InstanceType=INSTANCE_TYPE[1],
             KeyName=KEY_PAIR_NAME,
@@ -152,13 +149,11 @@ class Instance:
                 "SubnetId": self.subnet_id[1]
             }]
         )
-        instance_ids.append(instances['Instances'][0]['InstanceId'])
-        print(f'EC2 instance "{instance_ids[1]}" has been launched')
-        self.instances_details = {'id':instance_ids, 'zone':AVAILABILITY_ZONE}
-
+        
+    def terminate_instance(self, id_list):
+        for instanceID in id_list:
+            self.ec2_resource.instances.filter(InstanceIds=[instanceID]).terminate()
+            print('Instance '+ str(instanceID) +' terminated.')
 
     def get_ids(self):
         return self.security_group_id, self.subnet_id, self.vpc_id
-
-    def get_instance_infos(self):
-        return self.instances_details
