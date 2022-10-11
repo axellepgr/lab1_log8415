@@ -149,6 +149,11 @@ class Instance:
                 "SubnetId": self.subnet_id[1]
             }]
         )
+        
+    def terminate_instance(self, id_list):
+        for instanceID in id_list:
+            self.ec2_resource.instances.filter(InstanceIds=[instanceID]).terminate()
+            print('Instance '+ str(instanceID) +' terminated.')
 
     def get_ids(self):
         return self.security_group_id, self.subnet_id, self.vpc_id

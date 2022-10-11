@@ -4,21 +4,22 @@ import set_up_load_balancer
 import set_up_target_group
 import time
 import boto3
+import sys
 
 # IMPORTANT before running the file download your private key
 
-TARGET_GROUP_NUMBER = [1,2]
+TARGET_GROUP_NUMBER = [1, 2]
 ec2_resource = boto3.resource('ec2')
-
+instances_ids = []
 
 # Setting the instances
 print("Let set up the instances")
-instance = set_up_instances.Instance()
-instance.run_instances()
-security_group_id, subnet_id, vpc_id = instance.get_ids()
+instanceClass = set_up_instances.Instance()
+instanceClass.run_instances()
+security_group_id, subnet_id, vpc_id = instanceClass.get_ids()
 time.sleep(10)
 
-         
+# Get the ids of the running instances         
 instances = (ec2_resource.instances).filter()
 nb_running_instances = 0
 id_list_m4 = []
@@ -36,31 +37,54 @@ while (nb_running_instances < 9):
                     id_list_t2.append(id)                    
                 nb_running_instances +=1
                 print(str(id) + ' : ' + str(instance_type)+ ' is running.   (' + str(nb_running_instances) + '/9)')
-            time.sleep(5)
-print(id_list_m4)
-print(id_list_t2)
+    time.sleep(5)
+instances_ids = id_list_m4 + id_list_t2
             
 # Setting up the targets groups
-# tg_arn = []
-# for tg_nb in TARGET_GROUP_NUMBER:
-#     print("\n Deploying the target group number " + str(tg_nb))
-#     targetGroup = None
-#     if (tg_nb == 1):
-#         targetGroup = set_up_target_group.TargetGroup(tg_nb, vpc_id, id_list_m4)
-#     else:
-#         targetGroup = set_up_target_group.TargetGroup(tg_nb, vpc_id, id_list_t2)
-#     targetGroup.create_target_group()
-#     targetGroup.register_target()
-#     tg_arn.append(targetGroup.get_tg_arn())
-#     time.sleep(20)
+tg_arn = []
+targetGroupClass = None
+for tg_nb in TARGET_GROUP_NUMBER:
+    print("\n Deploying the target group number " + str(tg_nb))
+    if (tg_nb == 1):
+        targetGroupClass = set_up_target_group.TargetGroup(tg_nb, vpc_id, id_list_m4)
+    else:
+        targetGroupClass = set_up_target_group.TargetGroup(tg_nb, vpc_id, id_list_t2)
+    targetGroupClass.create_target_group()
+    targetGroupClass.register_target()
+    tg_arn.append(targetGroupClass.get_tg_arn())
+    time.sleep(5)
 
-# # Setting up the load balancer
-# print("\nDeploying the load balancer")
-# loadBalancer = set_up_load_balancer.LoadBalancer(security_group_id, subnet_id, tg_arn)
-# loadBalancer.create_load_balancer()
-# loadBalancer.create_listener()
-# time.sleep(10)
+# Setting up the load balancer
+print("\nDeploying the load balancer")
+loadBalancerClass = set_up_load_balancer.LoadBalancer(security_group_id, subnet_id, tg_arn)
+loadBalancerClass.create_load_balancer()
+loadBalancerClass.create_listener()
+lb_arn = loadBalancerClass.get_lb_arn()
+time.sleep(10)
 
-# Deploying flask in all of the running instances
+# # Deploying flask in all of the running instances
 # print("\nDeploying the flask app")
 # deploy_flask_app.deploy_and_setup_app()
+
+
+while True:
+    print ('\nMenu :')
+    print ('    press \'l\' to list running instances. ')
+    print ('    press \'q\' to quit. ')
+    print ('    press \'s\' to shutdown everything. ')
+    line = input('> ')
+    if (line == 'l'):
+        print('m4.large :')
+        print(id_list_m4)
+        print('t2.large :')
+        print(id_list_t2)
+    elif (line == 'q'):
+        sys.exit() 
+    elif (line == 's'):
+        print('Shutting down system...')
+        instanceClass.terminate_instance(instances_ids)
+        loadBalancerClass.delete_listener()
+        loadBalancerClass.delete_load_balancer()
+        for arn in tg_arn:
+            targetGroupClass.delete_target_group(arn)
+        print('\n!!! Don\'t forget to delete the VPC !!!')

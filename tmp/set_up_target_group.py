@@ -36,10 +36,10 @@ class TargetGroup:
         self.target_group_arn = response['TargetGroups'][0]['TargetGroupArn']
         print('Target group ' + str(self.tg_number) + ' created.')
         
-    def delete_target_groupr(self):
-        self.elbv2_client.delete_target_group(TargetGroupArn=self.target_group_arn)
+    def delete_target_group(self, tg_arn):
+        self.elbv2_client.delete_target_group(TargetGroupArn=tg_arn)
         self.target_group_arn = None
-        print('Target group deleted.')
+        print('Target group '+ str(tg_arn) +' deleted.')
         
     def register_target(self):
         self.elbv2_client.register_targets(
