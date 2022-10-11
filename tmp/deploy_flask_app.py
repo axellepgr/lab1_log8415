@@ -2,6 +2,7 @@ import helper_methods
 import paramiko
 import time
 import os
+import sys
 
 def ssh_connect_with_retry(ssh, ip_address, retries):
     if retries > 3:
@@ -58,6 +59,10 @@ def deploy_and_setup_app():
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh_connect_with_retry(ssh, ip_address, 0)
         stdin, stdout, stderr = ssh.exec_command(envsetup)
+        old_stdout = sys.stdout
+        log_file = open("logfile.log","w")
+        print('env setup done \n stdout:', stdout.read(), file=log_file)
+        log_file.close()
         #print('env setup done \n stdout:', stdout.read())
         stdin, stdout, stderr = ssh.exec_command(deploy)
         print('Deployment done for instance number '+ str(instance_nb) +'\n')
