@@ -60,4 +60,5 @@ def deploy_and_setup_app():
         print('env setup done \n stdout:', stdout.read())
         stdin, stdout, stderr = ssh.exec_command(deploy)
         print('deployment done \n')
-    # print('stderr:', stderr.read())
+        ssh.close()
+        time.sleep(5)
