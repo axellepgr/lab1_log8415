@@ -3,7 +3,6 @@ import paramiko
 import time
 import os
 
-
 def ssh_connect_with_retry(ssh, ip_address, retries):
     if retries > 3:
         return False

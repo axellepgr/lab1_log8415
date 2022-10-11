@@ -38,6 +38,9 @@ class LoadBalancer:
         self.load_balancer_arn = None
         print('Load balancer deleted.')
         
+    def get_lb_arn(self):
+        return self.load_balancer_arn
+        
     def create_listener(self):
         response = self.elbv2_client.create_listener(
             LoadBalancerArn=self.load_balancer_arn,
@@ -73,4 +76,7 @@ class LoadBalancer:
         self.elbv2_client.delete_listener(ListenerArn=self.listener_arn)
         self.listener_arn = None
         print('Listener deleted.')
+        
+    def get_listener_arn(self):
+        return self.listener_arn
 
