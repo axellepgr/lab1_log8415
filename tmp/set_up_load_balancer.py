@@ -11,6 +11,7 @@ class LoadBalancer:
         self.security_group_id = security_group_id
         self.subnet_id = subnet_id
         self.listener_arn = None
+        self.rules_arn = None
         self.tg_arn = target_group_arn
 
     def create_load_balancer(self):
@@ -40,6 +41,9 @@ class LoadBalancer:
         
     def get_lb_arn(self):
         return self.load_balancer_arn
+    
+    def get_lb_dns(self):
+        return self.dns_name
         
     def create_listener(self):
         response = self.elbv2_client.create_listener(
@@ -53,12 +57,12 @@ class LoadBalancer:
                         'TargetGroups': [
                             {
                                 'TargetGroupArn': str(self.tg_arn[0]),
-                                'Weight': 1
+                                'Weight': 2
                             },
                             {
                                 'TargetGroupArn': str(self.tg_arn[1]),
                                 'Weight': 1
-                            },
+                            }
                         ],
                     }
                 },
@@ -71,6 +75,47 @@ class LoadBalancer:
             ]
         )
         self.listener_arn = response['Listeners'][0]['ListenerArn']
+        
+    # def create_listener(self):
+    #     response = self.elbv2_client.create_listener(
+    #         LoadBalancerArn=self.load_balancer_arn,
+    #         Protocol='HTTP',
+    #         Port=80,
+    #         DefaultActions=[
+    #             {
+    #                 'Type': 'fixed-response',
+    #                 'FixedResponseConfig': { 'StatusCode': '404' },
+    #             },
+    #         ],
+    #         Tags=[
+    #             {
+    #                 'Key': 'string',
+    #                 'Value': 'string'
+    #             },
+    #         ]
+    #     )
+    #     self.listener_arn = response['Listeners'][0]['ListenerArn']
+    
+    # def add_rules(self):
+    #     for i in range(len(self.tg_arn)):
+    #         indice = i+1
+    #         response = self.elbv2_client.create_rule(
+    #             ListenerArn=self.listener_arn,
+    #             Conditions=[
+    #                 {
+    #                     'Field': 'path-pattern',
+    #                     'Values': [f'/cluster{indice}']
+    #                 },
+    #             ],
+    #             Priority=indice,
+    #             Actions=[
+    #                 {
+    #                     'Type': 'forward',
+    #                     'TargetGroupArn': self.tg_arn[i],
+    #                 },
+    #             ]
+    #         )
+    #         #self.rules_arn.append( response['Rules'][0]['RuleArn'] )
         
     def delete_listener(self):
         self.elbv2_client.delete_listener(ListenerArn=self.listener_arn)

@@ -8,7 +8,8 @@ AWS_REGION = 'us-east-1'
 AVAILABILITY_ZONE = ['us-east-1a', 'us-east-1b']
 INSTANCE_TYPE = ["m4.large", "t2.large"]
 KEY_PAIR_NAME = "vockey"
-AMI_ID = ["ami-08c40ec9ead489470", "ami-0f1ee03d06c4c659c"]
+# AMI_ID = ["ami-08c40ec9ead489470", "ami-0f1ee03d06c4c659c"]
+AMI_ID = "ami-08c40ec9ead489470"
 BASH_DEPLOY_APP = """
 #!/bin/bash
 sudo apt-get update -y
@@ -124,7 +125,7 @@ class Instance:
         instances = self.ec2_client.run_instances(
             MinCount=5,
             MaxCount=5,
-            ImageId=AMI_ID[0],
+            ImageId=AMI_ID,
             InstanceType=INSTANCE_TYPE[0],
             KeyName=KEY_PAIR_NAME,
             NetworkInterfaces=[{
@@ -139,7 +140,7 @@ class Instance:
         instances = self.ec2_client.run_instances(
             MinCount=4,
             MaxCount=4,
-            ImageId=AMI_ID[1],
+            ImageId=AMI_ID,
             InstanceType=INSTANCE_TYPE[1],
             KeyName=KEY_PAIR_NAME,
             NetworkInterfaces=[{
