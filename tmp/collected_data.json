@@ -1,0 +1,17 @@
+{
+    "vpc_id": "vpc-0b449228a88405f06",
+    "id_list_m4": [
+        "i-031e09f98ab04154e",
+        "i-0f2961505fb585427",
+        "i-0b3f98fe4356fc54f",
+        "i-0eead69a3869f37fc",
+        "i-005a60ec220558a94"
+    ],
+    "id_list_t2": [
+        "i-03ffe8056f120310f",
+        "i-052f55a11fcc0cbe5",
+        "i-0364b7306404d762f",
+        "i-0ff14eb887710307b"
+    ],
+    "lb_dns": "Load-balancer-1-536029790.us-east-1.elb.amazonaws.com"
+}

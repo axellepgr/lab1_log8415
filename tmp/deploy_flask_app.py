@@ -16,7 +16,7 @@ def ssh_connect_with_retry(ssh, ip_address, retries):
         retries += 1
         print('SSH into the instance: {}'.format(ip_address))
         ssh.connect(hostname=ip_address,
-                    username='ubuntu', pkey=privkey)
+                    username="ubuntu", pkey=privkey)
         return True
     except Exception as e:
         print(e)
@@ -25,7 +25,9 @@ def ssh_connect_with_retry(ssh, ip_address, retries):
         ssh_connect_with_retry(ssh, ip_address, retries)
 
 
-envsetup = """
+def envsetup(instanceID):
+    str_instanceID = str(instanceID)
+    return """
 #!/bin/bash
 yes | sudo apt-get update
 yes | sudo apt install python3-pip
@@ -41,7 +43,7 @@ import requests
 app = Flask(__name__)
 @app.route("/")
 def my_app():
-    return "Your small app is working"
+    return "Your small app is working on instande id:" + " """ + str_instanceID + """ "
 @app.route('/name_info/<string:name_t>')
 def get_name_info(name_t: str):
     return requests.get(f'https://api.agify.io?name={name_t}').content
@@ -53,6 +55,7 @@ def get_nationality(name_t: str):
     return requests.get(f'https://api.nationalize.io?name={name_t}').content
 EOF
 """
+
 
 deploy = """
 cd flask_application
@@ -70,7 +73,7 @@ def deploy_and_setup_app():
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh_connect_with_retry(ssh, ip_address, 0)
-        stdin, stdout, stderr = ssh.exec_command(envsetup)
+        stdin, stdout, stderr = ssh.exec_command(envsetup(instance[0]))
         old_stdout = sys.stdout
         log_file = open("logfile.log", "w")
         print('env setup done \n stdout:', stdout.read(), file=log_file)
