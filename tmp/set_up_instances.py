@@ -118,6 +118,10 @@ class Instance:
                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
             ])
         print('Ingress Successfully Set.')
+        
+    def delete_security_group(self):
+        self.ec2_client.delete_security_group(GroupId=self.security_group_id)
+        print('Security group deleted')
 
 
     def run_instances(self):
@@ -154,7 +158,15 @@ class Instance:
     def terminate_instance(self, id_list):
         for instanceID in id_list:
             self.ec2_resource.instances.filter(InstanceIds=[instanceID]).terminate()
-            print('Instance '+ str(instanceID) +' terminated.')
+            print('Instance '+ str(instanceID) +' shutting down.')
+            
+    def wait_for_instance_terminated(self, ids):
+        print('Waiting for the instances to terminate...')
+        waiter = self.ec2_client.get_waiter('instance_terminated')
+        waiter.wait(
+            InstanceIds=ids
+        )
+        print('Instances terminated.')
 
     def get_ids(self):
         return self.security_group_id, self.subnet_id, self.vpc_id

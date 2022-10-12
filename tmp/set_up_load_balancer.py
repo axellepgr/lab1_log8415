@@ -14,6 +14,11 @@ class LoadBalancer:
         self.rules_arn = None
         self.tg_arn = target_group_arn
 
+    def setup(self):
+        self.create_load_balancer()
+        self.create_listener()
+        return self.get_lb_dns()
+        
     def create_load_balancer(self):
         print('Creating load balancer...')
         response = self.elbv2_client.create_load_balancer(
@@ -124,4 +129,3 @@ class LoadBalancer:
         
     def get_listener_arn(self):
         return self.listener_arn
-

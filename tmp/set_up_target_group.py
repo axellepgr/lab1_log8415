@@ -9,6 +9,11 @@ class TargetGroup:
         self.vpc_id = vpc_id
         self.instance_id = instance_id
         self.target_group_arn = None
+        
+    def setup(self):
+        self.create_target_group()
+        self.register_target()
+        return self.target_group_arn
     
     def create_target_group(self):
         print('Creating target group ' + str(self.tg_number) + '...')

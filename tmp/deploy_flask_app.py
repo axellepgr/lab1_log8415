@@ -62,7 +62,7 @@ nohup sudo flask run --host=0.0.0.0 --port=80 1>/dev/null 2>/dev/null &
 
 
 def deploy_and_setup_app():
-    running_instances = helper_methods.get_running_instances()
+    running_instances = helper_methods.get_running_instances_and_ip()
     instance_nb = 0
     for instance in running_instances:
         instance_nb += 1
