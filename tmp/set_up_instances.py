@@ -30,12 +30,14 @@ export flask_application=app.py
 nohup sudo flask run --host=0.0.0.0 --port=80 &
 exit
 """
+
+
 class Instance:
-    
+
     def __init__(self):
         self.ec2_client = boto3.client("ec2", region_name=AWS_REGION)
         self.ec2_resource = boto3.resource('ec2', region_name=AWS_REGION)
-        self.security_group_id = None 
+        self.security_group_id = None
         self.subnet_id = None
         self.vpc_id = None
 
@@ -76,49 +78,52 @@ class Instance:
             DestinationCidrBlock='0.0.0.0/0', GatewayId=ig_id)
 
         # Create a Subnet with public IP on launch
-        subnet = vpc.create_subnet( AvailabilityZone=AVAILABILITY_ZONE[0], CidrBlock='172.31.0.0/24')
+        subnet = vpc.create_subnet(
+            AvailabilityZone=AVAILABILITY_ZONE[0], CidrBlock='172.31.0.0/24')
         self.ec2_client.modify_subnet_attribute(
             SubnetId=subnet.id,
             MapPublicIpOnLaunch={'Value': True},
         )
-        self.subnet_id=[subnet.id]
+        self.subnet_id = [subnet.id]
         routetable.associate_with_subnet(SubnetId=self.subnet_id[0])
-        
+
         # Create a second Subnet with public IP on launch
-        subnet = vpc.create_subnet( AvailabilityZone=AVAILABILITY_ZONE[1], CidrBlock='172.31.1.0/24')
+        subnet = vpc.create_subnet(
+            AvailabilityZone=AVAILABILITY_ZONE[1], CidrBlock='172.31.1.0/24')
         self.ec2_client.modify_subnet_attribute(
             SubnetId=subnet.id,
             MapPublicIpOnLaunch={'Value': True},
         )
         self.subnet_id.append(subnet.id)
         routetable.associate_with_subnet(SubnetId=self.subnet_id[1])
-        
+
         # create a secutrity group with the new vpc
         response = self.ec2_client.create_security_group(GroupName=sg_name,
-                                            Description='SG_basic',
-                                            VpcId=vpc.id)
+                                                         Description='SG_basic',
+                                                         VpcId=vpc.id)
         self.security_group_id = response['GroupId']
-        print('Security Group Created %s in vpc %s.' % (self.security_group_id, vpc.id))
+        print('Security Group Created %s in vpc %s.' %
+              (self.security_group_id, vpc.id))
 
         # setting ingress to allow http/https and ssh connections
         data = self.ec2_client.authorize_security_group_ingress(
             GroupId=self.security_group_id,
             IpPermissions=[
                 {'IpProtocol': 'tcp',
-                'FromPort': 80,
-                'ToPort': 80,
-                'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
+                 'FromPort': 80,
+                 'ToPort': 80,
+                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
                 {'IpProtocol': 'tcp',
-                'FromPort': 22,
-                'ToPort': 22,
-                'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
+                 'FromPort': 22,
+                 'ToPort': 22,
+                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]},
                 {'IpProtocol': 'tcp',
-                'FromPort': 443,
-                'ToPort': 443,
-                'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
+                 'FromPort': 443,
+                 'ToPort': 443,
+                 'IpRanges': [{'CidrIp': '0.0.0.0/0'}]}
             ])
         print('Ingress Successfully Set.')
-        
+
     def delete_security_group(self):
         self.ec2_client.delete_security_group(GroupId=self.security_group_id)
         print('Security group deleted')
@@ -126,7 +131,6 @@ class Instance:
     def delete_vpc(self):
         self.ec2_client.delete_vpc(VpcId=self.vpc_id)
         print('VPC deleted')
-
 
     def run_instances(self):
         self.security_group()
@@ -158,12 +162,13 @@ class Instance:
                 "SubnetId": self.subnet_id[1]
             }]
         )
-        
+
     def terminate_instance(self, id_list):
         for instanceID in id_list:
-            self.ec2_resource.instances.filter(InstanceIds=[instanceID]).terminate()
-            print('Instance '+ str(instanceID) +' shutting down.')
-            
+            self.ec2_resource.instances.filter(
+                InstanceIds=[instanceID]).terminate()
+            print('Instance ' + str(instanceID) + ' shutting down.')
+
     def wait_for_instance_terminated(self, ids):
         print('Waiting for the instances to terminate...')
         waiter = self.ec2_client.get_waiter('instance_terminated')
@@ -174,8 +179,3 @@ class Instance:
 
     def get_ids(self):
         return self.security_group_id, self.subnet_id, self.vpc_id
-
-
-
-
-

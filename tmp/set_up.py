@@ -1,3 +1,6 @@
+from botocore.exceptions import ClientError
+import datetime
+from set_yp_cloudwatch import CloudWatchWrapper
 from logging import shutdown
 import set_up_instances
 import deploy_flask_app
@@ -8,6 +11,7 @@ import time
 import boto3
 import sys
 import json
+import os
 
 # IMPORTANT before running the file download your private key
 
@@ -93,10 +97,9 @@ def shutdown_system(instances_ids, tg_arn, instanceClass, loadBalancerClass, tar
         targetGroupClass.delete_target_group(arn)
     instanceClass.wait_for_instance_terminated(instances_ids)
     print('\n!!! Don\'t forget to delete the VPC !!!')
-    #time.sleep(30)
-    #instanceClass.delete_vpc()
-    #instanceClass.delete_security_group()
-
+    # time.sleep(30)
+    # instanceClass.delete_vpc()
+    # instanceClass.delete_security_group()
 
 
 # START
@@ -126,25 +129,27 @@ deploy_flask()
 print('Time sleep 60 secondes')
 time.sleep(60)
 #####################################
-from set_yp_cloudwatch import CloudWatchWrapper
-import datetime
-from botocore.exceptions import ClientError
+instances_ids, id_list_m4, id_list_t2 = helper_methods.get_running_instances()
+for id in instances_ids:
+    os.system("aws ec2 monitor-instances --instance-ids " + id)
+
+os.system("python send_requests.py")
+time.sleep(60)
+
 
 client = boto3.client('ec2')
-instances_ids, id_list_m4, id_list_t2 = helper_methods.get_running_instances()
+
 start = datetime.datetime.utcnow() - datetime.timedelta(seconds=600)
 end = datetime.datetime.utcnow()
 period = 300
 cw_wrapper = CloudWatchWrapper(boto3.resource('cloudwatch'))
 
-#for id in instances_ids:
+for id in instances_ids:
+    cpu_utilization = cw_wrapper.get_metric_statistics('AWS/EC2', 'CPUUtilization', [{'Name': 'InstanceId', 'Value': id}],
+                                                       start, end, period, ['Minimum', 'Maximum', 'Average'])
 
-#print(id)
-cpu_utilization = cw_wrapper.get_metric_statistics('AWS/EC2', 'CPUUtilization', [{'Name': 'InstanceId', 'Value': instances_ids[1]}],
-                                                   start, end, period, ['Minimum', 'Maximum', 'Average'])
-
-print(f"CPU Utilization for instance 'id': {instances_ids[1]}")
-print(cpu_utilization)
+    print(f"CPU Utilization for instance 'id': {instances_ids[1]}")
+    print(cpu_utilization)
 
 #print(f"Minimum: {cpu_utilization['Datapoints'][0]['Minimum']}")
 #print(f"Maximum: {cpu_utilization['Datapoints'][0]['Maximum']}")
