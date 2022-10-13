@@ -17,7 +17,7 @@ class LoadBalancer:
     def setup(self):
         self.create_load_balancer()
         self.create_listener()
-        return self.get_lb_dns()
+        return self.get_lb_dns(), self.load_balancer_arn
         
     def create_load_balancer(self):
         print('Creating load balancer...')

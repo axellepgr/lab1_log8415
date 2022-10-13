@@ -34,7 +34,7 @@ def wait_instances():
     nb_running_instances = 0
     id_list_m4 = []
     id_list_t2 = []
-    while (nb_running_instances < 9):
+    while (nb_running_instances < 2):
         for instance in instances:
             state = instance.state['Name']
             if (state == 'running'):
@@ -75,8 +75,8 @@ def setup_load_balancer(security_group_id, subnet_id, tg_arn):
     print("\nDeploying the load balancer")
     loadBalancerClass = set_up_load_balancer.LoadBalancer(
         security_group_id, subnet_id, tg_arn)
-    lb_dns = loadBalancerClass.setup()
-    return lb_dns, loadBalancerClass
+    lb_dns,lb_arn = loadBalancerClass.setup()
+    return lb_dns,lb_arn, loadBalancerClass
 
 # Deploying flask in all of the running instances
 
@@ -103,15 +103,18 @@ def shutdown_system(instances_ids, tg_arn, instanceClass, loadBalancerClass, tar
 security_group_id, subnet_id, vpc_id, instanceClass = setup_instance()
 id_list_m4, id_list_t2 = wait_instances()
 tg_arn, targetGroupClass = setup_tagret_group(vpc_id, id_list_m4, id_list_t2)
-lb_dns, loadBalancerClass = setup_load_balancer(
+lb_dns,lb_arn, loadBalancerClass = setup_load_balancer(
     security_group_id, subnet_id, tg_arn)
 
+print("time sleep")
+time.sleep(180)
 # Data to be written
 dictionary = {
     "vpc_id": vpc_id,
     "id_list_m4": id_list_m4,
     "id_list_t2": id_list_t2,
-    "lb_dns": lb_dns
+    "lb_dns": lb_dns,
+    "lb_arn": lb_arn
 }
 
 # Serializing json
@@ -131,7 +134,7 @@ client = boto3.client('ec2')
 instances_ids, id_list_m4, id_list_t2 = helper_methods.get_running_instances()
 start = datetime.datetime.utcnow() - datetime.timedelta(seconds=600)
 end = datetime.datetime.utcnow()
-period = 60
+period = 120
 cw_wrapper = CloudWatchWrapper(boto3.resource('cloudwatch'))
 
 # Metrics for cluster 1 (m4.large)
@@ -139,7 +142,7 @@ for id_m4 in id_list_m4:
     cpu_utilization = cw_wrapper.get_metric_statistics('AWS/EC2', 'CPUUtilization', [{'Name': 'InstanceId', 'Value': id_m4}],
                                                        start, end, period, ['Minimum', 'Maximum', 'Average'])
 
-    print(f"CPU Utilization for cluster 1, instance: {id}")
+    print(f"CPU Utilization for cluster 1, instance: {id_m4}")
     print(cpu_utilization['Datapoints'])
 
 # Metrics for cluster 2 (t2.large)
@@ -147,8 +150,16 @@ for id_t2 in id_list_t2:
     cpu_utilization = cw_wrapper.get_metric_statistics('AWS/EC2', 'CPUUtilization', [{'Name': 'InstanceId', 'Value': id_t2}],
                                                        start, end, period, ['Minimum', 'Maximum', 'Average'])
 
-    print(f"CPU Utilization for cluster 2, instance: {id}")
+    print(f"CPU Utilization for cluster 2, instance: {id_t2}")
     print(cpu_utilization['Datapoints'])
+
+# Metrics for load balancer
+print(lb_arn)
+ap_ELB = cw_wrapper.get_metric_statistics('AWS/ApplicationELB', 'ActiveConnectionCount', [{'Name': 'LoadBalancer', 'Value': str(lb_arn)}],
+                                                       start, end, period, ['Sum'])
+
+
+print(ap_ELB)
 
 
 #print(f"Minimum: {cpu_utilization['Datapoints'][0]['Minimum']}")
