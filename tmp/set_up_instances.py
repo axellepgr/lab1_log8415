@@ -123,12 +123,16 @@ class Instance:
         self.ec2_client.delete_security_group(GroupId=self.security_group_id)
         print('Security group deleted')
 
+    def delete_vpc(self):
+        self.ec2_client.delete_vpc(VpcId=self.vpc_id)
+        print('VPC deleted')
+
 
     def run_instances(self):
         self.security_group()
         instances = self.ec2_client.run_instances(
-            MinCount=5,
-            MaxCount=5,
+            MinCount=1,
+            MaxCount=1,
             ImageId=AMI_ID,
             InstanceType=INSTANCE_TYPE[0],
             KeyName=KEY_PAIR_NAME,
@@ -142,8 +146,8 @@ class Instance:
 
         # 2nd instance
         instances = self.ec2_client.run_instances(
-            MinCount=4,
-            MaxCount=4,
+            MinCount=1,
+            MaxCount=1,
             ImageId=AMI_ID,
             InstanceType=INSTANCE_TYPE[1],
             KeyName=KEY_PAIR_NAME,
@@ -170,3 +174,8 @@ class Instance:
 
     def get_ids(self):
         return self.security_group_id, self.subnet_id, self.vpc_id
+
+
+
+
+

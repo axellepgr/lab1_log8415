@@ -32,7 +32,7 @@ def wait_instances():
     nb_running_instances = 0
     id_list_m4 = []
     id_list_t2 = []
-    while (nb_running_instances < 9):
+    while (nb_running_instances < 2):
         for instance in instances:
             state = instance.state['Name']
             if (state == 'running'):
@@ -92,8 +92,11 @@ def shutdown_system(instances_ids, tg_arn, instanceClass, loadBalancerClass, tar
     for arn in tg_arn:
         targetGroupClass.delete_target_group(arn)
     instanceClass.wait_for_instance_terminated(instances_ids)
-    instanceClass.delete_security_group()
     print('\n!!! Don\'t forget to delete the VPC !!!')
+    #time.sleep(30)
+    #instanceClass.delete_vpc()
+    #instanceClass.delete_security_group()
+
 
 
 # START
@@ -119,6 +122,36 @@ with open("collected_data.json", "w") as outfile:
     outfile.write(json_object)
 
 deploy_flask()
+
+print('Time sleep 60 secondes')
+time.sleep(60)
+#####################################
+from set_yp_cloudwatch import CloudWatchWrapper
+import datetime
+from botocore.exceptions import ClientError
+
+client = boto3.client('ec2')
+instances_ids, id_list_m4, id_list_t2 = helper_methods.get_running_instances()
+start = datetime.datetime.utcnow() - datetime.timedelta(seconds=600)
+end = datetime.datetime.utcnow()
+period = 300
+cw_wrapper = CloudWatchWrapper(boto3.resource('cloudwatch'))
+
+#for id in instances_ids:
+
+#print(id)
+cpu_utilization = cw_wrapper.get_metric_statistics('AWS/EC2', 'CPUUtilization', [{'Name': 'InstanceId', 'Value': instances_ids[1]}],
+                                                   start, end, period, ['Minimum', 'Maximum', 'Average'])
+
+print(f"CPU Utilization for instance 'id': {instances_ids[1]}")
+print(cpu_utilization)
+
+#print(f"Minimum: {cpu_utilization['Datapoints'][0]['Minimum']}")
+#print(f"Maximum: {cpu_utilization['Datapoints'][0]['Maximum']}")
+#print(f"Average: {cpu_utilization['Datapoints'][0]['Average']}\n")
+
+########################################
+
 
 while True:
     print('\nMenu :')
