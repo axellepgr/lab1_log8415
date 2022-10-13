@@ -120,6 +120,9 @@ with open("collected_data.json", "w") as outfile:
 
 deploy_flask()
 
+print("Flask app deployed on all instance!")
+
+
 while True:
     print('\nMenu :')
     print('    press \'i\' to get informations. ')
