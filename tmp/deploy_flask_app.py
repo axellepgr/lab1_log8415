@@ -92,4 +92,4 @@ def deploy_and_setup_app():
         t["thread" + str(instance_nb)] = myThread(instance, instance_nb)
         t["thread" + str(instance_nb)].start()
     t["thread1"].join()
-    t["thread1"].join()
+    t["thread2"].join()
