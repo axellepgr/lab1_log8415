@@ -3,6 +3,7 @@ import paramiko
 import time
 import os
 import sys
+import threading
 
 
 def ssh_connect_with_retry(ssh, ip_address, retries):
@@ -44,15 +45,6 @@ app = Flask(__name__)
 @app.route("/")
 def my_app():
     return "Your small app is working on instande id:" + " """ + str_instanceID + """ "
-@app.route('/name_info/<string:name_t>')
-def get_name_info(name_t: str):
-    return requests.get(f'https://api.agify.io?name={name_t}').content
-@app.route('/activity')
-def get_activity():
-    return requests.get(f'https://www.boredapi.com/api/activity').content
-@app.route('/from_where/<string:name_t>')
-def get_nationality(name_t: str):
-    return requests.get(f'https://api.nationalize.io?name={name_t}').content
 EOF
 """
 
@@ -64,22 +56,40 @@ nohup sudo flask run --host=0.0.0.0 --port=80 1>/dev/null 2>/dev/null &
 """
 
 
+class myThread (threading.Thread):
+    def __init__(self, instance, threadID):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.instance = instance
+
+    def run(self):
+        print("Deploying using Thread " + str(self.threadID))
+        deploy_using_threads(self.instance, self.threadID)
+
+
+def deploy_using_threads(instance, instance_nb):
+    ip_address = instance[1]
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh_connect_with_retry(ssh, ip_address, 0)
+    stdin, stdout, stderr = ssh.exec_command(envsetup(instance[0]))
+    old_stdout = sys.stdout
+    log_file = open("logfile.log", "w")
+    print('env setup done \n stdout:', stdout.read(), file=log_file)
+    log_file.close()
+    #print('env setup done \n stdout:', stdout.read())
+    stdin, stdout, stderr = ssh.exec_command(deploy)
+    print('Deployment done for instance number ' + str(instance_nb) + '\n')
+    ssh.close()
+
+
 def deploy_and_setup_app():
     running_instances = helper_methods.get_running_instances_and_ip()
     instance_nb = 0
+    t = {}
     for instance in running_instances:
         instance_nb += 1
-        ip_address = instance[1]
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh_connect_with_retry(ssh, ip_address, 0)
-        stdin, stdout, stderr = ssh.exec_command(envsetup(instance[0]))
-        old_stdout = sys.stdout
-        log_file = open("logfile.log", "w")
-        print('env setup done \n stdout:', stdout.read(), file=log_file)
-        log_file.close()
-        #print('env setup done \n stdout:', stdout.read())
-        stdin, stdout, stderr = ssh.exec_command(deploy)
-        print('Deployment done for instance number ' + str(instance_nb) + '\n')
-        ssh.close()
-        time.sleep(5)
+        t["thread" + str(instance_nb)] = myThread(instance, instance_nb)
+        t["thread" + str(instance_nb)].start()
+    t["thread1"].join()
+    t["thread2"].join()

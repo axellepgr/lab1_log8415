@@ -1,20 +1,16 @@
 import os
-#from datetime import datetime
-# from sqlite3 import Timestamp
+import json
 
-# # datetime object containing current date and time
-#now = datetime.now()
-#timestamp_now = now.strftime("%Y-%m-%d" + "T" + "%H:%M:%S")
-# minutes = now.minute - 1
-# timestamp_now_1minbefore = now.strftime(
-#     "%Y-%m-%d" + "T" + "%H:" + str(minutes)+":%S")
-# print(timestamp_now)
-# print(timestamp_now_1minbefore)
+# retreive instance IDs
+with open('collected_data.json', 'r') as openfile:
+    # Reading from json file
+    json_object = json.load(openfile)
 
+IDs = json_object["id_list_m4"] + json_object["id_list_t2"]
 
 # enable detailed monitoring for the EC2 instances
-
-os.system("aws ec2 unmonitor-instances --instance-ids i-09fb0f809f429f5d5")
+for id in IDs:
+    os.system("aws ec2 monitor-instances --instance-ids " + id)
 
 # # list the available metrics for the EC2 instances
 # #os.system("aws cloudwatch list-metrics --namespace AWS/EC2")
