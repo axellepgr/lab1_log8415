@@ -8,6 +8,8 @@ import time
 import boto3
 import sys
 import json
+from set_yp_cloudwatch import CloudWatchWrapper
+import datetime
 
 # IMPORTANT before running the file download your private key
 
@@ -32,7 +34,7 @@ def wait_instances():
     nb_running_instances = 0
     id_list_m4 = []
     id_list_t2 = []
-    while (nb_running_instances < 2):
+    while (nb_running_instances < 9):
         for instance in instances:
             state = instance.state['Name']
             if (state == 'running'):
@@ -93,7 +95,6 @@ def shutdown_system(instances_ids, tg_arn, instanceClass, loadBalancerClass, tar
         targetGroupClass.delete_target_group(arn)
     instanceClass.wait_for_instance_terminated(instances_ids)
     print('\n!!! Don\'t forget to delete the VPC !!!')
-    #time.sleep(30)
     #instanceClass.delete_vpc()
     #instanceClass.delete_security_group()
 
@@ -123,28 +124,33 @@ with open("collected_data.json", "w") as outfile:
 
 deploy_flask()
 
+#####################################
+
 print('Time sleep 60 secondes')
 time.sleep(60)
-#####################################
-from set_yp_cloudwatch import CloudWatchWrapper
-import datetime
-from botocore.exceptions import ClientError
-
 client = boto3.client('ec2')
 instances_ids, id_list_m4, id_list_t2 = helper_methods.get_running_instances()
 start = datetime.datetime.utcnow() - datetime.timedelta(seconds=600)
 end = datetime.datetime.utcnow()
-period = 300
+period = 60
 cw_wrapper = CloudWatchWrapper(boto3.resource('cloudwatch'))
 
-#for id in instances_ids:
+# Metrics for cluster 1 (m4.large)
+for id_m4 in id_list_m4:
+    cpu_utilization = cw_wrapper.get_metric_statistics('AWS/EC2', 'CPUUtilization', [{'Name': 'InstanceId', 'Value': id_m4}],
+                                                       start, end, period, ['Minimum', 'Maximum', 'Average'])
 
-#print(id)
-cpu_utilization = cw_wrapper.get_metric_statistics('AWS/EC2', 'CPUUtilization', [{'Name': 'InstanceId', 'Value': instances_ids[1]}],
-                                                   start, end, period, ['Minimum', 'Maximum', 'Average'])
+    print(f"CPU Utilization for cluster 1, instance: {id}")
+    print(cpu_utilization['Datapoints'])
 
-print(f"CPU Utilization for instance 'id': {instances_ids[1]}")
-print(cpu_utilization)
+# Metrics for cluster 2 (t2.large)
+for id_t2 in id_list_t2:
+    cpu_utilization = cw_wrapper.get_metric_statistics('AWS/EC2', 'CPUUtilization', [{'Name': 'InstanceId', 'Value': id_t2}],
+                                                       start, end, period, ['Minimum', 'Maximum', 'Average'])
+
+    print(f"CPU Utilization for cluster 2, instance: {id}")
+    print(cpu_utilization['Datapoints'])
+
 
 #print(f"Minimum: {cpu_utilization['Datapoints'][0]['Minimum']}")
 #print(f"Maximum: {cpu_utilization['Datapoints'][0]['Maximum']}")
