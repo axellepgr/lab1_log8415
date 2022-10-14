@@ -208,8 +208,6 @@ def register_targets(tg_arn, instances_ids):
             } for id in instances_ids
         ]
     )
-    print('Instance targets ' + str(instances_ids) +
-          ' are registered in target group with arn ' + str(tg_arn) + '.')
 
 
 def setup_load_balancer(sg_id, subnets_id, tg_arns):

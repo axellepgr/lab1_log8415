@@ -1,6 +1,4 @@
 import json
-import os
-import time
 import datetime
 import boto3
 from set_up_cloudwatch import CloudWatchWrapper
@@ -16,21 +14,28 @@ lb_arn = json_object["lb_arn"]
 
 print("\n############### CloudWatch ###############\n")
 
-print("Activating detailed monitoring for all EC2 instances")
-for id in m4_IDs + t2_IDs:
-    os.system("aws ec2 monitor-instances --instance-ids " + id)
+# print("Activating detailed monitoring for all EC2 instances")
+# for id in m4_IDs + t2_IDs:
+#     os.system("aws ec2 monitor-instances --instance-ids " + id)
 
-print("Sending GET requests...")
-os.system("python send_requests.py")
+# print("Sending GET requests...")
+# os.system("python send_requests.py")
 
-print("Waiting 1 minute before getting the CloudWatch metrics")
-time.sleep(60)
+# print("Waiting 1 minute before getting the CloudWatch metrics")
+# time.sleep(60)
 
 
-start = datetime.datetime.utcnow() - datetime.timedelta(seconds=300)
+start = datetime.datetime.utcnow() - datetime.timedelta(seconds=600)
 end = datetime.datetime.utcnow()
 period = 60
 cw_wrapper = CloudWatchWrapper(boto3.resource('cloudwatch'))
+
+# Initialize a dictionary to store the metrics
+dictionary = {
+    "m4_instances": {"CPU_Utilization": [], "NetworkIn": []},
+    "t2_instances": {"CPU_Utilization": [], "NetworkIn": []},
+    "load_balancer": {"active_cc": [], "request_count": []}
+}
 
 # Metrics for cluster 1 (m4.large)
 for id_m4 in m4_IDs:
@@ -48,6 +53,10 @@ for id_m4 in m4_IDs:
         cpu_metrics.append([datapoint["Timestamp"], datapoint["Average"]])
 
     cpu_metrics.sort()
+
+    # add the instance CPU metrics the dictionary
+    sub_dict = {id_m4: cpu_metrics}
+    dictionary["m4_instances"]["CPU_Utilization"].append(sub_dict)
 
     for metric in cpu_metrics:
         print("date" + str(metric[0]) + " : " + str(metric[1]))
@@ -67,6 +76,10 @@ for id_m4 in m4_IDs:
 
     network_in_metrics.sort()
 
+    # add the instance Network In metrics the dictionary
+    sub_dict = {id_m4: network_in_metrics}
+    dictionary["m4_instances"]["NetworkIn"].append(sub_dict)
+
     for metric in network_in_metrics:
         print("date" + str(metric[0]) + " : " + str(metric[1]))
 
@@ -85,6 +98,10 @@ for id_t2 in t2_IDs:
 
     cpu_metrics.sort()
 
+    # add the instance CPU metrics the dictionary
+    sub_dict = {id_t2: cpu_metrics}
+    dictionary["t2_instances"]["CPU_Utilization"].append(sub_dict)
+
     for metric in cpu_metrics:
         print("date" + str(metric[0]) + " : " + str(metric[1]))
 
@@ -101,6 +118,10 @@ for id_t2 in t2_IDs:
             [datapoint["Timestamp"], datapoint["Average"]])
 
     network_in_metrics.sort()
+
+    # add the instance Network In metrics the dictionary
+    sub_dict = {id_t2: network_in_metrics}
+    dictionary["t2_instances"]["NetworkIn"].append(sub_dict)
 
     for metric in network_in_metrics:
         print("date" + str(metric[0]) + " : " + str(metric[1]))
@@ -121,6 +142,9 @@ for datapoint in active_cc['Datapoints']:
 
 active_cc_metrics.sort()
 
+# add the load balancer active connection count metric to the dictionary
+dictionary["load_balancer"]["active_cc"].append(active_cc_metrics)
+
 for metric in active_cc_metrics:
     print("date" + str(metric[0]) + " : " + str(metric[1]))
 
@@ -139,5 +163,16 @@ for datapoint in RequestCount['Datapoints']:
 
 RequestCount_metrics.sort()
 
+# add the loadb balancer request count metrics to the dictionary
+dictionary["load_balancer"]["request_count"].append(RequestCount_metrics)
+
 for metric in RequestCount_metrics:
     print("date" + str(metric[0]) + " : " + str(metric[1]))
+
+
+# Serializing json
+json_object = json.dumps(dictionary, indent=4, default=str)
+
+# Writing to collected_data.json
+with open("metrics.json", "w") as outfile:
+    outfile.write(json_object)
