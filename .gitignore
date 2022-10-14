@@ -214,5 +214,6 @@ ENV/
 
 #.pem ssh key
 tmp/labsuser.pem
+refactored_code/labsuser.pem
 
 # End of https://www.gitignore.io/api/macos,linux,django,python,pycharm
