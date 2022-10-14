@@ -2,6 +2,10 @@ import json
 import datetime
 import boto3
 from set_up_cloudwatch import CloudWatchWrapper
+import os
+import time
+
+SECONDS = 600
 
 with open('collected_data.json', 'r') as openfile:
     # Reading from json file
@@ -14,18 +18,18 @@ lb_arn = json_object["lb_arn"]
 
 print("\n############### CloudWatch ###############\n")
 
-# print("Activating detailed monitoring for all EC2 instances")
-# for id in m4_IDs + t2_IDs:
-#     os.system("aws ec2 monitor-instances --instance-ids " + id)
+print("Activating detailed monitoring for all EC2 instances")
+for id in m4_IDs + t2_IDs:
+    os.system("aws ec2 monitor-instances --instance-ids " + id)
 
-# print("Sending GET requests...")
-# os.system("python send_requests.py")
+print("Sending GET requests...")
+os.system("python send_requests.py")
 
-# print("Waiting 1 minute before getting the CloudWatch metrics")
-# time.sleep(60)
+print("Waiting 1 minute before getting the CloudWatch metrics")
+time.sleep(60)
 
 
-start = datetime.datetime.utcnow() - datetime.timedelta(seconds=600)
+start = datetime.datetime.utcnow() - datetime.timedelta(seconds=SECONDS)
 end = datetime.datetime.utcnow()
 period = 60
 cw_wrapper = CloudWatchWrapper(boto3.resource('cloudwatch'))
