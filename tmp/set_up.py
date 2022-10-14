@@ -76,6 +76,7 @@ def setup_load_balancer(security_group_id, subnet_id, tg_arn):
     print("\nDeploying the load balancer")
     loadBalancerClass = set_up_load_balancer.LoadBalancer(
         security_group_id, subnet_id, tg_arn)
+
     lb_dns, lb_arn = loadBalancerClass.setup()
     return lb_dns, lb_arn, loadBalancerClass
 
@@ -107,9 +108,8 @@ tg_arn, targetGroupClass = setup_tagret_group(vpc_id, id_list_m4, id_list_t2)
 lb_dns, lb_arn, loadBalancerClass = setup_load_balancer(
     security_group_id, subnet_id, tg_arn)
 
-print("sleep after creating load balancer")
+print("time sleep")
 time.sleep(180)
-
 # Data to be written
 dictionary = {
     "vpc_id": vpc_id,
@@ -150,7 +150,7 @@ print("cloudwatch metrics: ")
 client = boto3.client('ec2')
 start = datetime.datetime.utcnow() - datetime.timedelta(seconds=600)
 end = datetime.datetime.utcnow()
-period = 60
+period = 120
 cw_wrapper = CloudWatchWrapper(boto3.resource('cloudwatch'))
 
 # Metrics for cluster 1 (m4.large)
@@ -169,9 +169,13 @@ for id_t2 in id_list_t2:
     print(f"CPU Utilization for cluster 2, instance: {id_t2}")
     print(cpu_utilization['Datapoints'])
 
+# Metrics for load balancer
 print(lb_arn)
 ap_ELB = cw_wrapper.get_metric_statistics('AWS/ApplicationELB', 'ActiveConnectionCount', [{'Name': 'LoadBalancer', 'Value': str(lb_arn)}],
                                           start, end, period, ['Sum'])
+
+
+print(ap_ELB)
 
 
 print(ap_ELB['Datapoints'])
