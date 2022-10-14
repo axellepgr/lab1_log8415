@@ -42,4 +42,34 @@ def plot_graphs_for_instances(type):
     plt.show()
 
 
+def plot_graphs_for_load_balancer():
+    # json object containing metrics
+    lb_metrics = metrics["load_balancer"]
+
+    print(lb_metrics)
+    for metric in lb_metrics:
+        x = []
+        y = []
+        print(metric)
+        for point in lb_metrics[metric]:
+            point[0] = point[0].split()[1]
+            x.append(point[0])
+            y.append(point[1])
+
+        plt.figure("Load Balancer")
+        if metric == "active_cc":
+            plt.subplot(211)
+            plt.ylabel('ACC Count')
+        elif metric == "request_count":
+            plt.subplot(212)
+            plt.ylabel('Request Count')
+        plt.plot(x, y, label=metric)
+        plt.xlabel('timestamp')
+        plt.title("Load Balancer")
+    plt.show()
+
+
 plot_graphs_for_instances("m4_instances")
+plot_graphs_for_instances("t2_instances")
+
+# plot_graphs_for_load_balancer()
