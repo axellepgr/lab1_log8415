@@ -10,6 +10,7 @@ import sys
 import json
 from set_yp_cloudwatch import CloudWatchWrapper
 import datetime
+import os
 
 # IMPORTANT before running the file download your private key
 
@@ -34,7 +35,7 @@ def wait_instances():
     nb_running_instances = 0
     id_list_m4 = []
     id_list_t2 = []
-    while (nb_running_instances < 9):
+    while (nb_running_instances < 2):
         for instance in instances:
             state = instance.state['Name']
             if (state == 'running'):
@@ -75,8 +76,8 @@ def setup_load_balancer(security_group_id, subnet_id, tg_arn):
     print("\nDeploying the load balancer")
     loadBalancerClass = set_up_load_balancer.LoadBalancer(
         security_group_id, subnet_id, tg_arn)
-    lb_dns = loadBalancerClass.setup()
-    return lb_dns, loadBalancerClass
+    lb_dns, lb_arn = loadBalancerClass.setup()
+    return lb_dns, lb_arn, loadBalancerClass
 
 # Deploying flask in all of the running instances
 
@@ -103,15 +104,19 @@ def shutdown_system(instances_ids, tg_arn, instanceClass, loadBalancerClass, tar
 security_group_id, subnet_id, vpc_id, instanceClass = setup_instance()
 id_list_m4, id_list_t2 = wait_instances()
 tg_arn, targetGroupClass = setup_tagret_group(vpc_id, id_list_m4, id_list_t2)
-lb_dns, loadBalancerClass = setup_load_balancer(
+lb_dns, lb_arn, loadBalancerClass = setup_load_balancer(
     security_group_id, subnet_id, tg_arn)
+
+print("sleep after creating load balancer")
+time.sleep(180)
 
 # Data to be written
 dictionary = {
     "vpc_id": vpc_id,
     "id_list_m4": id_list_m4,
     "id_list_t2": id_list_t2,
-    "lb_dns": lb_dns
+    "lb_dns": lb_dns,
+    "lb_arn": lb_arn
 }
 
 # Serializing json
@@ -125,10 +130,24 @@ deploy_flask()
 
 #####################################
 
-print('Time sleep 60 secondes')
-time.sleep(60)
-client = boto3.client('ec2')
+# Activate detailed monitoring for all EC2 instances
 instances_ids, id_list_m4, id_list_t2 = helper_methods.get_running_instances()
+
+for id in instances_ids:
+    os.system("aws ec2 monitor-instances --instance-ids " + id)
+
+print('Time sleep 5 secondes')
+time.sleep(5)
+
+# Send GET requests to the load balancer
+print("sending GET requests")
+os.system("python send_requests.py")
+print("waiting 1 minute before getting cloudwatch metrics")
+time.sleep(60)
+
+# retreive metrics data using CloudWatch
+print("cloudwatch metrics: ")
+client = boto3.client('ec2')
 start = datetime.datetime.utcnow() - datetime.timedelta(seconds=600)
 end = datetime.datetime.utcnow()
 period = 60
@@ -139,7 +158,7 @@ for id_m4 in id_list_m4:
     cpu_utilization = cw_wrapper.get_metric_statistics('AWS/EC2', 'CPUUtilization', [{'Name': 'InstanceId', 'Value': id_m4}],
                                                        start, end, period, ['Minimum', 'Maximum', 'Average'])
 
-    print(f"CPU Utilization for cluster 1, instance: {id}")
+    print(f"CPU Utilization for cluster 1, instance: {id_m4}")
     print(cpu_utilization['Datapoints'])
 
 # Metrics for cluster 2 (t2.large)
@@ -147,14 +166,15 @@ for id_t2 in id_list_t2:
     cpu_utilization = cw_wrapper.get_metric_statistics('AWS/EC2', 'CPUUtilization', [{'Name': 'InstanceId', 'Value': id_t2}],
                                                        start, end, period, ['Minimum', 'Maximum', 'Average'])
 
-    print(f"CPU Utilization for cluster 2, instance: {id}")
+    print(f"CPU Utilization for cluster 2, instance: {id_t2}")
     print(cpu_utilization['Datapoints'])
 
+print(lb_arn)
+ap_ELB = cw_wrapper.get_metric_statistics('AWS/ApplicationELB', 'ActiveConnectionCount', [{'Name': 'LoadBalancer', 'Value': str(lb_arn)}],
+                                          start, end, period, ['Sum'])
 
-#print(f"Minimum: {cpu_utilization['Datapoints'][0]['Minimum']}")
-#print(f"Maximum: {cpu_utilization['Datapoints'][0]['Maximum']}")
-#print(f"Average: {cpu_utilization['Datapoints'][0]['Average']}\n")
 
+print(ap_ELB['Datapoints'])
 ########################################
 
 

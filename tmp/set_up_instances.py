@@ -135,8 +135,8 @@ class Instance:
     def run_instances(self):
         self.security_group()
         instances = self.ec2_client.run_instances(
-            MinCount=4,
-            MaxCount=4,
+            MinCount=1,
+            MaxCount=1,
             ImageId=AMI_ID,
             InstanceType=INSTANCE_TYPE[0],
             KeyName=KEY_PAIR_NAME,
@@ -150,8 +150,8 @@ class Instance:
 
         # 2nd instance
         instances = self.ec2_client.run_instances(
-            MinCount=5,
-            MaxCount=5,
+            MinCount=1,
+            MaxCount=1,
             ImageId=AMI_ID,
             InstanceType=INSTANCE_TYPE[1],
             KeyName=KEY_PAIR_NAME,
