@@ -213,10 +213,12 @@ ENV/
 /site
 
 #.pem ssh key
-tmp/labsuser.pem
-refactored_code/labsuser.pem
+old_code/labsuser.pem
+src/labsuser.pem
+
 
 #collected data throughout the creating of the infrastructure
-refactored_code/collected_data.json
+src/collected_data.json
+src/metrics.json
 
 # End of https://www.gitignore.io/api/macos,linux,django,python,pycharm
