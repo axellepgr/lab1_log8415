@@ -16,15 +16,15 @@ lb_arn = json_object["lb_arn"]
 
 print("\n############### CloudWatch ###############\n")
 
-# print("Activating detailed monitoring for all EC2 instances")
-# for id in m4_IDs + t2_IDs:
-#     os.system("aws ec2 monitor-instances --instance-ids " + id)
+print("Activating detailed monitoring for all EC2 instances")
+for id in m4_IDs + t2_IDs:
+    os.system("aws ec2 monitor-instances --instance-ids " + id)
 
-# print("Sending GET requests...")
-# os.system("python send_requests.py")
+print("Sending GET requests...")
+os.system("python send_requests.py")
 
-# print("Waiting 1 minute before getting the CloudWatch metrics")
-# time.sleep(60)
+print("Waiting 1 minute before getting the CloudWatch metrics")
+time.sleep(60)
 
 
 start = datetime.datetime.utcnow() - datetime.timedelta(seconds=300)
