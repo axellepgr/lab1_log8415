@@ -6,7 +6,7 @@ TARGET_GROUP_NUMBER = [1, 2]
 AWS_REGION = 'us-east-1'
 AVAILABILITY_ZONE = ['us-east-1a', 'us-east-1b']
 INSTANCE_TYPE = ["m4.large", "t2.large"]
-NB_INSTANCES = 2
+NB_INSTANCES = 9
 KEY_PAIR_NAME = "vockey"
 AMI_ID = "ami-08c40ec9ead489470"
 
@@ -295,8 +295,8 @@ sg_id = create_sg(vpc_id)
 print("Security group created!\n")
 
 print("Creating the EC2 instances...")
-create_ec2_instances(1, 0, sg_id, subnets_id[0])
-create_ec2_instances(1, 1, sg_id, subnets_id[1])
+create_ec2_instances(5, 0, sg_id, subnets_id[0])
+create_ec2_instances(4, 1, sg_id, subnets_id[1])
 print("EC2 instances created!\n")
 
 print("Waiting for the EC2 instaces to become available...")
