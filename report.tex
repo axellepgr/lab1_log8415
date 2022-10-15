@@ -1,4 +1,5 @@
-\documentclass{article}
+\documentclass[12pt]{article}
+
 
 % Language setting
 % Replace `english' with e.g. `spanish' to change the document language
@@ -6,15 +7,15 @@
 
 % Set page size and margins
 % Replace `letterpaper' with `a4paper' for UK/EU standard size
-\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=2cm,right=2cm,marginparwidth=2cm]{geometry}
 
 % Useful packages
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
-\title{Polytechnique Montreal
-LOG8415: Lab 1
+\title{Polytechnique Montreal \\
+LOG8415: Lab 1\\
 Cluster Benchmarking using EC2 Virtual
 Machines and Elastic Load Balancer (ELB)}
 
@@ -30,6 +31,23 @@ First we will explain the overall architecture that is going to be deployed usin
 \end{abstract}
 
 \section{Setting Up the Environment}
+In this section, we discuss the steps that lead to the creation of instances, target groups and the load balancer in order to prepare our environment to receive the tasks requested in this laboratory.Figure 1 illustrates the path we followed to setting up the environment.\\
+We start with the creation of a custom core virtual networking with the Amazon virtual Private Cloud (VPC) service, the goal is to have complete control of the virtual network environment, including resource placement, connectivity, and security.\\
+The second step consists in the creation of an internet gateway which allows to ensure the communication between our resources in the VPC and the internet.\\
+The creation of a custom VPC needs to have custom subnets, for this we have created two different subnets, one for each availability zone ('us-east-1a' and 'us-east-1b'), but before creating the subnets we have established a routing table because each subnet in VPC must be associated with a routing table, which controls the network traffic routing for the subnet.\\
+To secure the instances that we are going to generate, we have created a security group which acts as a virtual firewall for our EC2 instances and which contains a set of rules that filter incoming and outgoing traffic.\\
+Once all the steps discussed above have been completed, we proceed to the creation of our EC2 instances, in total \textbf{9} instances have been created in the same region \textbf{'us-east-1'}, with two different types of instances: \textbf{'m4.large'} and \textbf{'t2.large'}. Five (05) of the instances are of type 'm4.large' in the availability zone 'us-east-1a' and four (04) are of type 't2.large' in the availability zone 'us-east-1b'.\\
+In order to group the instances to form the clusters, two target groups have been made, the first with the instances of type 'm4.large' and the second with the type 't2.large'.\\
+The final step for setting up the environment is the creation of the load balancer, which will manage the request traffic sent to our clusters, the type of load balancer used is \textbf{Application Load Balancer} (ALB) that operate at layer 7 (application layer).
+
+
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{Environment_setup.png}
+  \caption{Setting up the environment.}
+  \label{fig:boat1}
+\end{figure}
+
 \section{Deploying the Flask Application}
 \section{Benchmarking}
 \section{Conclusion}
