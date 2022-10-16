@@ -9,6 +9,8 @@
 % Replace `letterpaper' with `a4paper' for UK/EU standard size
 \usepackage[letterpaper,top=2cm,bottom=2cm,left=2cm,right=2cm,marginparwidth=2cm]{geometry}
 
+\usepackage{listings}
+
 % Useful packages
 \usepackage{amsmath}
 \usepackage{graphicx}
@@ -49,7 +51,22 @@ The final step for setting up the environment is the creation of the load balanc
 \end{figure}
 
 \section{Deploying the Flask Application}
+To deploy the flask application we created an ssh connection to each of the instances using the python library paramiko \cite{paramiko}. 
+Once the connection was established using the key pair we ran a bash script that would set up the environment for python and flask, add the code for the application and then deploy it on port 80 of each instance. 
+\\
+To deploy our small app we simply used:
+\begin{lstlisting}[language=Bash]
+nohup sudo flask run --host=0.0.0.0 --port=80 1>/dev/null 2>/dev/null &
+\end{lstlisting}
+The bash command \emph{nohup}, keeps any process that is started after it running in the background so that we can exit the command line safely without stopping our small app. For example, given an instance with a public ip: 111.111.111, the user can go to the following url: http://111.111.111:80 and the app should be running. The page should simply display a message: \\
+\emph{Your small app is working on instance id: instance\_id}.\\ It is important in the following assignment to know which instance is responding since we will try to connect to the website using the load balancer. 
+
 \section{Benchmarking}
 \section{Conclusion}
+
+\begin{thebibliography}{9}
+\bibitem{paramiko}
+Paramiko, Availible online: https://www.paramiko.org/, Accessed: Oct. 2022. 
+\end{thebibliography}
 
 \end{document}
