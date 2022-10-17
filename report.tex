@@ -28,19 +28,19 @@ Mohammed Ramzi Bouthiba - 2065386\\Axelle Pagnier - 2164162}
 \maketitle
 
 \begin{abstract}
-In	assignment,	we	will	create	two	clusters of	EC2 virtual	machines and use	load	balancer	to	distribute	workloads	and	perform	extensive	benchmarking	on	those instances.\newline
-First we will explain the overall architecture that is going to be deployed using Amazon Web Services. Then we will talk about the flask application that we deployed on the EC2 instances. After that, we will discuss the performance metrics of the instances and the load balancer that we retreived using CloudWatch.	Finally, we will provide an automated solution to do the set up and the benchmarking.
+In this	assignment,	we	create	two	clusters of	EC2 virtual	machines and use	a load	balancer	to	distribute	workloads	and	perform	extensive	benchmarking	on	those instances.\newline
+First, we will explain the overall architecture that is going to be deployed using Amazon Web Services. Then we will talk about the flask application that we deployed on the EC2 instances. After that, we will discuss the performance metrics of the instances and the load balancer that we retreived using CloudWatch.	Finally, we will provide an automated solution to do the set up and the benchmarking.
 \end{abstract}
 
 \section{Setting Up the Environment}
 
 In this section, we discuss the steps that lead to the creation of the EC2 instances, target groups and the load balancer in order to prepare our environment for benchmarking. Figure 1 illustrates the process we followed to set up the environment.\vspace{1em}
 
-We start with the creation of a custom core virtual networking with the Amazon virtual Private Cloud (VPC) service, the goal is to have complete control of the virtual network environment, including resource placement, connectivity, and security.\vspace{1em}
+We start with the creation of a custom core virtual networking with the Amazon virtual Private Cloud (VPC) service. The goal is to have complete control of the virtual network environment, including resource placement, connectivity, and security.\vspace{1em}
 
 The second step consists of the creation of an internet gateway which allows to ensure the communication between our resources in the VPC and the internet.\vspace{1em}
 
-The creation of a custom VPC needs to have custom subnets, for this we have created two different subnets, one for each availability zone ('us-east-1a' and 'us-east-1b'), but before creating the subnets we have established a routing table because each subnet in VPC must be associated with a routing table, which controls the network traffic routing for the subnet.\vspace{1em}
+The creation of a custom VPC needs to have custom subnets, for this we have created two different ones, one for each availability zone ('us-east-1a' and 'us-east-1b'). However, before creating the subnets we have established a routing table because each subnet in VPC must be associated with a routing table, which controls the network traffic routing for the subnet.\vspace{1em}
 
 To secure the instances that we are going to generate, we have created a security group which acts as a virtual firewall for our EC2 instances and which contains a set of rules that filter incoming and outgoing traffic. We allowed HTTP and SSH connections from everywhere (0.0.0.0/0)\vspace{1em}
 
@@ -60,8 +60,8 @@ The final step for setting up the environment is the creation of the load balanc
 
 To deploy the flask application we created an ssh connection to each of the instances using the python library paramiko \cite{paramiko}.\vspace{1em}
 
-Once the connection was established using the key pair we ran a bash script that would set up the environment for python and flask, add the code for the application and then deploy it on port 80 of each instance.\vspace{1em}
-To deploy our small app we simply used:
+Once the connection was established using the key pair, we ran a bash script that would set up the environment for python and flask, add the code for the application and then deploy it on port 80 of each instance.\vspace{1em}
+To deploy our small app we simply used the following command:
 \begin{lstlisting}[language=Bash]
 nohup sudo flask run --host=0.0.0.0 --port=80 1>/dev/null 2>/dev/null &
 \end{lstlisting}\vspace{1em}
@@ -101,6 +101,13 @@ The following graphs are an example of the metrics that we retrieved after setti
 \end{figure}
 
 By looking at the graphs of the two different EC2 instances, we can see that our load balancer did a great job at distributing the workloads amongst the instances since the NetworkIn metric (the bottom graph for each instance) follow the same trend at any given time.
+
+\section{Instructions to run the code}
+
+To reproduce the experiment, all you have to do is download the main.sh file and run it on your local computer. Make sure you have an internet connection and an AWS account. \\
+Once the repository is cloned, don't forget to : \\
+1. Set up your AWS credentials file (~/.aws/credentials). \\
+2. Put your SSH key (.pem file) inside the /src folder.
 
 \section{Conclusion}
 
