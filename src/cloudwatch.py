@@ -135,8 +135,8 @@ print("\nLoad Balancer Statistics...\n")
 active_cc = cw_wrapper.get_metric_statistics('AWS/ApplicationELB', 'ActiveConnectionCount', [{'Name': 'LoadBalancer', 'Value': "app/Load-balancer-1/71292dcce222ad8c"}],
                                              start, end, period, ['Sum'])
 
-print(str(len(active_cc['Datapoints'])) +
-      " datapoint available for the Active Connection Count metric")
+#print(str(len(active_cc['Datapoints'])) +
+#      " datapoint available for the Active Connection Count metric")
 
 active_cc_metrics = []
 
@@ -155,9 +155,9 @@ for metric in active_cc_metrics:
 RequestCount = cw_wrapper.get_metric_statistics('AWS/ApplicationELB', 'RequestCount', [{'Name': 'LoadBalancer', 'Value': "app/Load-balancer-1/71292dcce222ad8c"}],
                                                 start, end, period, ['Sum'])
 
-print("\n\n")
-print(str(len(RequestCount['Datapoints'])) +
-      " datapoint available for the RequestCount metric")
+#print("\n\n")
+#print(str(len(RequestCount['Datapoints'])) +
+#      " datapoint available for the RequestCount metric")
 
 RequestCount_metrics = []
 
