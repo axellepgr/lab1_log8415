@@ -8,7 +8,7 @@ with open('metrics.json', 'r') as openfile:
 
 
 def plot_graphs_for_instances(type):
-    
+
     print("Plotting graphs ...")
 
     # json object containing metrics
@@ -41,6 +41,7 @@ def plot_graphs_for_instances(type):
             if metric == "NetworkIn":
                 plt.ylabel('Bytes')
             plt.title(id)
+    plt.savefig(f"${id}_1.png")
     plt.show()
 
 
@@ -68,6 +69,7 @@ def plot_graphs_for_load_balancer():
         plt.plot(x, y, label=metric)
         plt.xlabel('timestamp')
         plt.title("Load Balancer")
+    plt.savefig(f"${id}_2.png")
     plt.show()
 
 

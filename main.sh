@@ -7,6 +7,7 @@ then
     pip3 install botocore==1.27.89
     pip3 install paramiko==2.11.0
     pip3 install requests==2.22.0
+    pip3 install matplotlib==3.0.3
 
     echo "Clonning the git repo to proceed with the deployment"
     git clone https://github.com/axellepgr/lab1_log8415.git
