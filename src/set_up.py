@@ -260,6 +260,19 @@ def setup_load_balancer(sg_id, subnets_id, tg_arns):
     print("Listener created!")
     return lb_dns, lb_arn, listener_arn
 
+def wait_for_load_balancer(lb_arn):
+    '''
+    This function waits for the load balancer to go grom the provisionning 
+    status to the active status.
+    '''
+    waiter = boto3.client('elbv2').get_waiter('load_balancer_available')
+    waiter.wait(
+        LoadBalancerArns=[
+            lb_arn,
+        ],
+    )
+    print('Load Balancer active.')
+    
 # START
 
 
@@ -332,7 +345,8 @@ json_object = json.dumps(dictionary, indent=4)
 with open("collected_data.json", "w") as outfile:
     outfile.write(json_object)
 
-print("Waiting for the load balancer to become in the active status...")
-time.sleep(180)
+print("Waiting for the load balancer to become in the active status... (up to 3 minutes)")
+#time.sleep(180)
+wait_for_load_balancer(lb_arn)
 print("Finished waiting.\n")
 print("\n############### DONE SETTING UP THE SYSTEM ###############\n")
