@@ -13,12 +13,14 @@ def plot_graphs_for_instances(type):
 
     # json object containing metrics
     m4_instances_CPU = metrics[type]
-
+    
+    metric_nb = 0
     # metric is a list containing json objects (on object for each instance)
     for metric in m4_instances_CPU:
 
         # instance is a json object with one key (instanceID) and its value is the datapoints
         for instance in m4_instances_CPU[metric]:
+            metric_nb+=1
             x = []
             y = []
 
@@ -41,7 +43,7 @@ def plot_graphs_for_instances(type):
             if metric == "NetworkIn":
                 plt.ylabel('Bytes')
             plt.title(id)
-    plt.savefig(f"${id}_1.png")
+            plt.savefig(f"output/${metric_nb}_1.png")
     plt.show()
 
 
@@ -50,7 +52,9 @@ def plot_graphs_for_load_balancer():
     lb_metrics = metrics["load_balancer"]
 
     print(lb_metrics)
+    metric_nb = 0
     for metric in lb_metrics:
+        metric_nb+=1
         x = []
         y = []
         print(metric)
@@ -69,7 +73,7 @@ def plot_graphs_for_load_balancer():
         plt.plot(x, y, label=metric)
         plt.xlabel('timestamp')
         plt.title("Load Balancer")
-    plt.savefig(f"${id}_2.png")
+        plt.savefig(f"output/${metric_nb}_2.png")
     plt.show()
 
 
