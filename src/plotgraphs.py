@@ -8,6 +8,8 @@ with open('metrics.json', 'r') as openfile:
 
 
 def plot_graphs_for_instances(type):
+    
+    print("Plotting graphs ...")
 
     # json object containing metrics
     m4_instances_CPU = metrics[type]

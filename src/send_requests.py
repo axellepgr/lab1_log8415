@@ -28,19 +28,19 @@ def call_endpoint_http(nbr):
     if nbr == 1:
         for i in range(0, 1000):
             r = requests.get(url, headers=headers)
-            print("THREAD 1 : status code: " +
-                  str(r.status_code) + ", response:" + r.text)
+            #print("THREAD 1 : status code: " +
+            #      str(r.status_code) + ", response:" + r.text)
         print("thread1 completed")
     else:
         for i in range(0, 500):
             r = requests.get(url, headers=headers)
-            print("THREAD 2 : status code: " +
-                  str(r.status_code) + ", response:" + r.text)
+            #print("THREAD 2 : status code: " +
+            #      str(r.status_code) + ", response:" + r.text)
         time.sleep(60)
         for i in range(0, 1000):
             r = requests.get(url, headers=headers)
-            print("THREAD 2 : status code: " +
-                  str(r.status_code) + ", response:" + r.text)
+            #print("THREAD 2 : status code: " +
+            #      str(r.status_code) + ", response:" + r.text)
         print("thread2 completed")
 
 

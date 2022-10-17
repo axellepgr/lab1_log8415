@@ -23,7 +23,7 @@ for id in m4_IDs + t2_IDs:
     os.system("aws ec2 monitor-instances --instance-ids " + id)
 
 print("Sending GET requests...")
-os.system("python send_requests.py")
+os.system("python3 send_requests.py")
 
 print("Waiting 1 minute before getting the CloudWatch metrics")
 time.sleep(60)

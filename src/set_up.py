@@ -156,7 +156,6 @@ def wait_instances():
         time.sleep(5)
     return id_list_m4, id_list_t2
 
-
 def setup_target_groups(vpc_id):
     """
     This function creates target groups.
