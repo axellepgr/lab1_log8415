@@ -42,7 +42,7 @@ def plot_graphs_for_instances(type):
             plt.ylabel('Percent')
             if metric == "NetworkIn":
                 plt.ylabel('Bytes')
-            plt.title(id)
+            plt.suptitle("metrics for instance " + str(id))
             plt.savefig(f"output/${metric_nb}_1.png")
     plt.show()
 
